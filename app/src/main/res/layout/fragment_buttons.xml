@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:id="@+id/ButtonsLayout1"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/ButtonsLayout2">
+
+        <Button
+            android:id="@+id/leftBraceButton"
+            android:text="@string/LeftBrace"
+            android:layout_weight="1"
+            style="@style/SymbolicButtonStyle"/>
+
+        <Button
+            android:id="@+id/sevenButton"
+            android:text="@string/seven"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/fourButton"
+            android:text="@string/four"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/oneButton"
+            android:text="@string/one"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/commaButton"
+            android:text="@string/Comma"
+            android:layout_weight="1"
+            style="@style/SymbolicButtonStyle"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ButtonsLayout2"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toRightOf="@id/ButtonsLayout1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/ButtonsLayout3">
+
+        <Button
+            android:id="@+id/rightBraceButton"
+            android:text="@string/RightBrace"
+            android:layout_weight="1"
+            style="@style/SymbolicButtonStyle"/>
+
+        <Button
+            android:id="@+id/eightButton"
+            android:text="@string/eight"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/fiveButton"
+            android:text="@string/five"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/twoButton"
+            android:text="@string/two"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/zeroButton"
+            android:text="@string/zero"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ButtonsLayout3"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toRightOf="@id/ButtonsLayout2"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/ButtonsLayout4">
+
+        <Button
+            android:id="@+id/deleteButton"
+            android:layout_weight="1"
+            style="@style/DeleteButtonStyle"/>
+
+        <Button
+            android:id="@+id/nineButton"
+            android:text="@string/nine"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/sixButton"
+            android:text="@string/six"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/threeButton"
+            android:text="@string/three"
+            android:layout_weight="1"
+            style="@style/NumericButtonStyle"/>
+
+        <Button
+            android:id="@+id/equalsButton"
+            android:text="@string/Equals"
+            android:layout_weight="1"
+            style="@style/SymbolicButtonStyle"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ButtonsLayout4"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:orientation="vertical"
+        app:layout_constraintLeft_toRightOf="@id/ButtonsLayout3"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <Button
+            android:id="@+id/divideButton"
+            android:text="@string/Divide"
+            android:layout_weight="1"
+            style="@style/SymbolicButtonStyle"/>
+
+        <Button
+            android:id="@+id/multiplyButton"
+            android:text="@string/Multiply"
+            android:layout_weight="1"
+            style="@style/SymbolicButtonStyle"/>
+
+        <Button
+            android:id="@+id/minusButton"
+            android:text="@string/Minus"
+            android:layout_weight="1"
+            style="@style/SymbolicButtonStyle"/>
+
+        <Button
+            android:id="@+id/plusButton"
+            android:text="@string/Plus"
+            android:layout_weight="2"
+            style="@style/SymbolicButtonStyle"/>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

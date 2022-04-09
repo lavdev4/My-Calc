@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background">#BDCFD7DF</color>
+    <color name="onPrimary">#E6EEF3</color>
+    <color name="screenColor">#BD7F878F</color>
+    <color name="status_navigationBarColor">#6B737B</color>
+    <color name="numericButtonColor">#515C68</color>
+    <color name="symbolicButtonColor">#333E4A</color>
+    <color name="cancelButtonColor">#C36E00</color>
+</resources>

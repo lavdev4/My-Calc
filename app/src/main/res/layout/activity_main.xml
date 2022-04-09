@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent">
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/ScreenFragment"
+        android:name="com.lavdevapp.MyCalc.fragments.ScreenFragment"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_marginLeft="9dp"
+        android:layout_marginRight="9dp"
+        android:layout_marginTop="18dp"
+        app:layout_constraintVertical_weight="1"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/AnswerLineFragment"/>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/AnswerLineFragment"
+        android:name="com.lavdevapp.MyCalc.fragments.AnswerLineFragment"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        android:layout_marginLeft="9dp"
+        android:layout_marginRight="9dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintVertical_weight="0.18"
+        app:layout_constraintTop_toBottomOf="@id/ScreenFragment"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/ButtonsFragment"/>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/ButtonsFragment"
+        android:name="com.lavdevapp.MyCalc.fragments.ButtonsFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginLeft="7dp"
+        android:layout_marginRight="7dp"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="6dp"
+        app:layout_constraintVertical_weight="1.4"
+        app:layout_constraintTop_toBottomOf="@id/AnswerLineFragment"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"/>
+</androidx.constraintlayout.widget.ConstraintLayout>
