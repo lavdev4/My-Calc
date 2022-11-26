@@ -1,9 +1,12 @@
 package com.lavdevapp.MyCalc.fragments;
 
 import android.os.Bundle;
+import android.text.Layout;
+import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,10 +23,13 @@ public class ScreenFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_screen, container, false);
-        TextView screen = view.findViewById(R.id.screen);
         CalcViewModel model = new ViewModelProvider(requireActivity()).get(CalcViewModel.class);
-        LiveData<String> screenText = model.getScreenText();
-        screenText.observe(getViewLifecycleOwner(), s -> screen.setText(screenText.getValue()));
+        TextView screen = view.findViewById(R.id.screen);
+        ScrollView screenScroll = view.findViewById(R.id.screenScroll);
+        model.getScreenText().observe(getViewLifecycleOwner(), text -> {
+            screen.setText(text);
+            screenScroll.post(() -> screenScroll.smoothScrollTo(0, screen.getBottom()));
+        });
         return view;
     }
 }
