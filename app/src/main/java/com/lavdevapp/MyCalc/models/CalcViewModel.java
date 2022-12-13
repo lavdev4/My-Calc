@@ -70,11 +70,10 @@ public class CalcViewModel extends ViewModel {
             inputController.init(".");
         } else if (buttonId == R.id.equalsButton) {
             inputController.init("=");
-            answerScreenText.setValue(lineBuilder.getAnswerLine());
         } else if (buttonId == R.id.clearButton) {
             inputController.clear();
-            answerScreenText.setValue(lineBuilder.getAnswerLine());
         }
         screenText.setValue(lineBuilder.getLine());
+        answerScreenText.setValue(lineBuilder.getAnswerLine());
     }
 }

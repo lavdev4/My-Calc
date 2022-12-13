@@ -26,7 +26,7 @@ public class ScreenLineBuilder {
         setLine();
     }
 
-    public void addNumber(String symbol) {
+    public void add(String symbol) {
         buffer.add(symbol);
         setLine();
     }
@@ -89,9 +89,10 @@ public class ScreenLineBuilder {
                 screenLine = screenLine.substring(screenLine.lastIndexOf("=") + 2);
             }
             answer = calculator.calculate(screenLine);
+            setLine();
             setAnswerLine(answer);
         } catch (ArithmeticException e) {
-            setAnswerLine("Div. by 0 error");
+            setAnswerLine("Error");
         }
         return answer;
     }

@@ -39,6 +39,7 @@ public class InputController {
             lineCollector.deleteNumber();
         }
         block = block.substring(0, block.length() - 1);
+        setInput();
     }
 
     public void clear() {
@@ -64,11 +65,10 @@ public class InputController {
                 block = "";
                 lineCollector.addSymbol(symbol);
             }
-
         } else if (symbol.equals("-")) {
             if (isNegativeNumber()) {
                 block += symbol;
-                lineCollector.addNumber(symbol);
+                lineCollector.add(symbol);
             } else {
                 if (blockStack.empty()) {
                     blockStack.push(block);
@@ -90,14 +90,14 @@ public class InputController {
                 blockStack.push("-");
             }
             blockStack.push(symbol);
-            lineCollector.addNumber(symbol);
+            lineCollector.add(symbol);
         } else if (symbol.equals(")")) {
             if (!block.isEmpty()) {
                 blockStack.push(block);
             }
             blockStack.push(symbol);
             block = "";
-            lineCollector.addNumber(symbol);
+            lineCollector.add(symbol);
         } else if (symbol.equals("=")) {
             String answer = lineCollector.calculateAnswer();
             if (!block.isEmpty()) {
@@ -107,10 +107,21 @@ public class InputController {
             blockStack.push(answer);
             block = "";
             lineCollector.addSymbol(symbol);
-            lineCollector.addNumber(answer);
+            lineCollector.add(answer);
         } else {
             block += symbol;
-            lineCollector.addNumber(symbol);
+            lineCollector.add(symbol);
+        }
+        setInput();
+    }
+
+    private void setInput() {
+        if (!block.isEmpty()) {
+            lineCollector.setAnswerLine(block);
+        } else if (!blockStack.empty()) {
+            lineCollector.setAnswerLine(blockStack.peek());
+        } else {
+            lineCollector.setAnswerLine("");
         }
     }
 
