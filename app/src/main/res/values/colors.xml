@@ -8,4 +8,6 @@
     <color name="numericButtonColor">#515C68</color>
     <color name="symbolicButtonColor">#333E4A</color>
     <color name="cancelButtonColor">#C36E00</color>
+    <color name="answerLineColor">#F8BBD0</color>
+    <color name="allSignsColor">#DCEDC8</color>
 </resources>

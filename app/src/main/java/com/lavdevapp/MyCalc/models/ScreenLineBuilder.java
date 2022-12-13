@@ -1,6 +1,15 @@
 package com.lavdevapp.MyCalc.models;
 
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.SpannedString;
+import android.text.style.ForegroundColorSpan;
+
+import com.lavdevapp.MyCalc.R;
+
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ScreenLineBuilder {
     private String screenLine;
@@ -65,15 +74,32 @@ public class ScreenLineBuilder {
     }
 
     public String getLine() {
-        return screenLine;
+        String answerLineRegex = "= -?[0-9]+\\.?([0-9]+)?";
+        return setLineBreaks(screenLine, answerLineRegex);
     }
 
-    private void setAnswerLine(String answer) {
-        answerLine = answer;
+    private String setLineBreaks(String text, String regex) {
+        StringBuffer buffer = new StringBuffer();
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(text);
+        while (matcher.find()) {
+            matcher.appendReplacement(buffer, "\n" + matcher.group());
+        }
+        matcher.appendTail(buffer);
+        return buffer.toString();
+    }
+
+    public void setAnswerLine(String text) {
+        answerLine = text;
     }
 
     public String getAnswerLine() {
-        return answerLine;
+        return answerLine
+                .replaceAll("\\*", multiplySymbol)
+                .replaceAll("/", divideSymbol)
+                .replaceAll("\\(", "")
+                .replaceAll("\\)", "")
+                .replaceAll("=", "");
     }
 
     public void clearLines() {
