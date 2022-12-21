@@ -60,7 +60,7 @@ public class CalculatorRPN {
         return buffer;
     }
 
-    public String calculate(String expression) throws ArithmeticException {
+    private String calculate(String expression) throws ArithmeticException {
         Stack<String> mainStack;
         Stack<Double> buffer = new Stack<>();
 
@@ -94,5 +94,29 @@ public class CalculatorRPN {
             }
         }
         return decimalFormat.format(buffer.pop());
+    }
+
+    public Answer tryCalculate(String expression) {
+        try {
+            return new Answer(Answer.ANSWER_OK, calculate(expression));
+        } catch (ArithmeticException arithmeticException) {
+            return new Answer(Answer.ANSWER_ARITHMETIC_ERROR, "Arithmetic error.");
+        } catch (Exception exception) {
+            return new Answer(Answer.ANSWER_ERROR, "Error.");
+        }
+    }
+
+    public static class Answer {
+        public int type;
+        public String content;
+
+        public static int ANSWER_OK = 0;
+        public static int ANSWER_ARITHMETIC_ERROR = 1;
+        public static int ANSWER_ERROR = 2;
+
+        public Answer(int type, String content) {
+            this.type = type;
+            this.content = content;
+        }
     }
 }

@@ -73,7 +73,7 @@ public class CalcViewModel extends ViewModel {
         } else if (buttonId == R.id.clearButton) {
             inputController.clear();
         }
-        screenText.setValue(lineBuilder.getLine());
-        answerScreenText.setValue(lineBuilder.getAnswerLine());
+        screenText.setValue(lineBuilder.getCalculations());
+        answerScreenText.setValue(lineBuilder.getPosition());
     }
 }

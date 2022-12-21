@@ -1,4 +1,4 @@
-package com.lavdevapp.MyCalc.views.activity;
+package com.lavdevapp.MyCalc.presentation;
 
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;

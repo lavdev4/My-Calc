@@ -8,7 +8,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/ScreenFragment"
-        android:name="com.lavdevapp.MyCalc.fragments.ScreenFragment"
+        android:name="com.lavdevapp.MyCalc.presentation.ScreenFragment"
         android:layout_height="0dp"
         android:layout_width="0dp"
         android:layout_marginLeft="9dp"
@@ -22,7 +22,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/AnswerLineFragment"
-        android:name="com.lavdevapp.MyCalc.fragments.AnswerLineFragment"
+        android:name="com.lavdevapp.MyCalc.presentation.AnswerLineFragment"
         android:layout_height="0dp"
         android:layout_width="0dp"
         android:layout_marginLeft="9dp"
@@ -36,7 +36,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/ButtonsFragment"
-        android:name="com.lavdevapp.MyCalc.fragments.ButtonsFragment"
+        android:name="com.lavdevapp.MyCalc.presentation.ButtonsFragment"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginLeft="7dp"

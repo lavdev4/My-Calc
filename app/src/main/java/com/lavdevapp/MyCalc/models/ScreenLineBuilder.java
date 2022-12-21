@@ -1,100 +1,105 @@
 package com.lavdevapp.MyCalc.models;
 
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.SpannedString;
-import android.text.style.ForegroundColorSpan;
-
-import com.lavdevapp.MyCalc.R;
-
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ScreenLineBuilder {
-    private String screenLine;
-    private String answerLine;
+    private StringBuilder calculationsHistory;
+    private final ArrayList<String> currentCalculations;
+    private String position = "";
     private final CalculatorRPN calculator;
-    private final ArrayList<String> buffer;
     private final String multiplySymbol = Character.toString((char) 215);
     private final String divideSymbol = Character.toString((char) 247);
 
     public ScreenLineBuilder() {
-        buffer = new ArrayList<>();
+        calculationsHistory = new StringBuilder();
+        currentCalculations = new ArrayList<>();
         calculator = new CalculatorRPN();
     }
 
-    public void addSymbol(String symbol) {
+    public void addDistinct(String symbol) {
         if (symbol.equals("*")) {
-            buffer.add(" " + multiplySymbol + " ");
+            currentCalculations.add(" " + multiplySymbol + " ");
         } else if (symbol.equals("/")) {
-            buffer.add(" " + divideSymbol + " ");
+            currentCalculations.add(" " + divideSymbol + " ");
         } else {
-            buffer.add(" " + symbol + " ");
+            currentCalculations.add(" " + symbol + " ");
         }
-        setLine();
+//        setCalculations();
     }
 
-    public void add(String symbol) {
-        buffer.add(symbol);
-        setLine();
+        public void addPortion(String symbol) {
+        currentCalculations.add(symbol);
+//        setCalculations();
     }
 
-    public void deleteSymbol() {
-        buffer.remove(buffer.size() - 1);
-        setLine();
+    public void addAnswer(String answer) {
+        currentCalculations.add("\n");
+        currentCalculations.add(" = ");
+        currentCalculations.add(answer);
+        currentCalculations.add("\n");
+//            setCalculations();
+        calculationsHistory.append(collectBuffer());
+        currentCalculations.clear();
     }
 
-    public void deleteNumber() {
+    public void deleteDistinct() {
+        currentCalculations.remove(currentCalculations.size() - 1);
+//        setCalculations();
+    }
+
+    public void deletePortion() {
         String element;
-        if (buffer.size() < 2) {
-            element = buffer.get(0);
+        if (currentCalculations.size() < 2) {
+            element = currentCalculations.get(0);
             if (element.length() < 2) {
-                clearLines();
+                currentCalculations.clear();
             } else {
-                buffer.set(0, element.substring(0, element.length() - 1));
+                currentCalculations.set(0, element.substring(0, element.length() - 1));
             }
         } else {
-            element = buffer.get(buffer.size() - 1);
+            element = currentCalculations.get(currentCalculations.size() - 1);
             if (element.length() < 2) {
-                buffer.remove(buffer.size() - 1);
+                currentCalculations.remove(currentCalculations.size() - 1);
             } else {
-                buffer.set(buffer.size() - 1, element.substring(0, element.length() - 1));
+                currentCalculations.set(currentCalculations.size() - 1, element.substring(0, element.length() - 1));
             }
         }
-        setLine();
+//        setCalculations();
     }
 
-    private void setLine() {
-        StringBuilder text = new StringBuilder();
-        for (String element : buffer) {
-            text.append(element);
-        }
-        screenLine = text.toString();
+//    private void setCalculations() {
+////        int lastIndexEquals = calculations.lastIndexOf("=");
+////        if (lastIndexEquals != -1) {
+////            calculations = calculations + collectBuffer();
+////        } else {
+////            calculations = collectBuffer();
+////        }
+//        calculations = calculations + bufferGetLast();
+//    }
+
+    public String getCalculations() {
+//        String answerLineRegex = "= -?[0-9]+\\.?([0-9]+)?";
+//        return setLineBreaks(calculations, answerLineRegex);
+        return calculationsHistory + collectBuffer();
     }
 
-    public String getLine() {
-        String answerLineRegex = "= -?[0-9]+\\.?([0-9]+)?";
-        return setLineBreaks(screenLine, answerLineRegex);
+//    private String setLineBreaks(String text, String regex) {
+//        StringBuffer buffer = new StringBuffer();
+//        Pattern pattern = Pattern.compile(regex);
+//        Matcher matcher = pattern.matcher(text);
+//        while (matcher.find()) {
+//            matcher.appendReplacement(buffer, "\n" + matcher.group() + "\n");
+//        }
+//        matcher.appendTail(buffer);
+//        return buffer.toString();
+//    }
+
+    public void setPosition(String text) {
+        position = text;
     }
 
-    private String setLineBreaks(String text, String regex) {
-        StringBuffer buffer = new StringBuffer();
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(text);
-        while (matcher.find()) {
-            matcher.appendReplacement(buffer, "\n" + matcher.group());
-        }
-        matcher.appendTail(buffer);
-        return buffer.toString();
-    }
-
-    public void setAnswerLine(String text) {
-        answerLine = text;
-    }
-
-    public String getAnswerLine() {
-        return answerLine
+    public String getPosition() {
+        return position
                 .replaceAll("\\*", multiplySymbol)
                 .replaceAll("/", divideSymbol)
                 .replaceAll("\\(", "")
@@ -102,24 +107,41 @@ public class ScreenLineBuilder {
                 .replaceAll("=", "");
     }
 
-    public void clearLines() {
-        buffer.clear();
-        setAnswerLine("");
-        setLine();
+    public void clearAllCalculations() {
+        calculationsHistory = new StringBuilder();
+        currentCalculations.clear();
+        setPosition("");
+//        setCalculations();
     }
 
-    public String calculateAnswer() {
-        String answer = "";
-        try {
-            if (screenLine.contains("=")) {
-                screenLine = screenLine.substring(screenLine.lastIndexOf("=") + 2);
-            }
-            answer = calculator.calculate(screenLine);
-            setLine();
-            setAnswerLine(answer);
-        } catch (ArithmeticException e) {
-            setAnswerLine("Error");
+    private String collectBuffer() {
+        StringBuilder text = new StringBuilder();
+        for (String element : currentCalculations) {
+            text.append(element);
         }
-        return answer;
+        return text.toString();
+    }
+
+    private String bufferGetLast() {
+        if (currentCalculations.isEmpty()) {
+            return "";
+        } else {
+            if (currentCalculations.contains(" = ")) {
+                StringBuilder text = new StringBuilder();
+                int equalsIndex = currentCalculations.lastIndexOf(" = ");
+                text.append("\n");
+                for (int index = equalsIndex; index < currentCalculations.size(); index++) {
+                    text.append(currentCalculations.get(index));
+                }
+                text.append("\n");
+                return text.toString();
+            } else {
+                return currentCalculations.get(currentCalculations.size() - 1);
+            }
+        }
+    }
+
+    public CalculatorRPN.Answer calculateAnswer() {
+        return calculator.tryCalculate(collectBuffer());
     }
 }

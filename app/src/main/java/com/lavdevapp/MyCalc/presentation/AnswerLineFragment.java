@@ -1,4 +1,4 @@
-package com.lavdevapp.MyCalc.fragments;
+package com.lavdevapp.MyCalc.presentation;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
