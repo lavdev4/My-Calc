@@ -25,7 +25,10 @@ public class InputController {
     private void checkForContinuingInput(String symbol) {
         if (answer != null && answer.type == CalculatorRPN.Answer.ANSWER_OK) {
             if (blockStack.empty() && block.isEmpty() && symbol.matches("[+\\-*/]")) {
-                add(answer.content);
+                char[] splitAnswer = answer.content.toCharArray();
+                for (char element : splitAnswer) {
+                    add(String.valueOf(element));
+                }
             }
             answer = null;
         }
@@ -49,6 +52,7 @@ public class InputController {
                 block = blockStack.pop();
             }
             if (block.matches("[+\\-*/=]") && block.length() == 1) {
+                // TODO: 23.12.2022 kills app on empty blockStack
                 block = blockStack.pop();
             } else if (block.equals("(")) {
                 leftBraceCount--;
@@ -59,7 +63,7 @@ public class InputController {
             } else {
                 block = block.substring(0, block.length() - 1);
             }
-            lineCollector.deleteDistinct();
+            lineCollector.delete();
         }
         setInput();
     }

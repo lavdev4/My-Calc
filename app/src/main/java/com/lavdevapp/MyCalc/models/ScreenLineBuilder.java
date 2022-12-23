@@ -42,7 +42,7 @@ public class ScreenLineBuilder {
         currentCalculations.clear();
     }
 
-    public void deleteDistinct() {
+    public void delete() {
         currentCalculations.remove(currentCalculations.size() - 1);
 //        setCalculations();
     }
