@@ -49,17 +49,18 @@ public class InputController {
             return;
         } else {
             if (!blockStack.empty() && block.isEmpty()) {
-                block = blockStack.pop();
-            }
-            if (block.matches("[+\\-*/=]") && block.length() == 1) {
-                // TODO: 23.12.2022 kills app on empty blockStack
-                block = blockStack.pop();
-            } else if (block.equals("(")) {
-                leftBraceCount--;
-                block = blockStack.pop();
-            } else if (block.equals(")")) {
-                rightBraceCount--;
-                block = blockStack.pop();
+                String toBeRemoved = blockStack.peek();
+                if (toBeRemoved.equals("(")) {
+                    leftBraceCount--;
+                } else if (toBeRemoved.equals(")")) {
+                    rightBraceCount--;
+                }
+                blockStack.pop();
+                String staysBeforeRemovable = blockStack.peek();
+                if (staysBeforeRemovable.matches("-?[0-9]+\\.?([0-9]+)?")) {
+                    block = staysBeforeRemovable;
+                    blockStack.pop();
+                }
             } else {
                 block = block.substring(0, block.length() - 1);
             }
