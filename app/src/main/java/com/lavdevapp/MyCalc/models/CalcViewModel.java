@@ -65,15 +65,15 @@ public class CalcViewModel extends ViewModel {
         } else if (buttonId == R.id.rightBraceButton) {
             inputController.init(")");
         } else if (buttonId == R.id.deleteButton) {
-            inputController.delete();
+            inputController.remove();
         } else if (buttonId == R.id.commaButton) {
             inputController.init(".");
         } else if (buttonId == R.id.equalsButton) {
             inputController.init("=");
         } else if (buttonId == R.id.clearButton) {
-            inputController.clear();
+            inputController.clearAllCalculations();
         }
-        screenText.setValue(lineBuilder.getCalculations());
-        answerScreenText.setValue(lineBuilder.getPosition());
+        screenText.setValue(lineBuilder.getAllCalculations());
+        answerScreenText.setValue(lineBuilder.getCurrentPosition());
     }
 }
