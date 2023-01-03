@@ -1,125 +1,99 @@
 package com.lavdevapp.MyCalc.models;
 
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.SpannedString;
-import android.text.style.ForegroundColorSpan;
-
-import com.lavdevapp.MyCalc.R;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
 
 import java.util.ArrayList;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class ScreenLineBuilder {
-    private String screenLine;
-    private String answerLine;
-    private final CalculatorRPN calculator;
-    private final ArrayList<String> buffer;
-    private final String multiplySymbol = Character.toString((char) 215);
-    private final String divideSymbol = Character.toString((char) 247);
+    private final MutableLiveData<String> calculationsHistory;
+    private final MutableLiveData<String> currentPosition;
+    private StringBuilder calculationsHistoryBuilder;
+    private final ArrayList<String> currentCalculationsBuilder;
+
+    private final transient String multiplySymbol = Character.toString((char) 215);
+    private final transient String divideSymbol = Character.toString((char) 247);
 
     public ScreenLineBuilder() {
-        buffer = new ArrayList<>();
-        calculator = new CalculatorRPN();
+        calculationsHistory = new MutableLiveData<>("");
+        currentPosition = new MutableLiveData<>("");
+        calculationsHistoryBuilder = new StringBuilder();
+        currentCalculationsBuilder = new ArrayList<>();
     }
 
-    public void addSymbol(String symbol) {
+    public void addDistinct(String symbol) {
         if (symbol.equals("*")) {
-            buffer.add(" " + multiplySymbol + " ");
+            currentCalculationsBuilder.add(" " + multiplySymbol + " ");
         } else if (symbol.equals("/")) {
-            buffer.add(" " + divideSymbol + " ");
+            currentCalculationsBuilder.add(" " + divideSymbol + " ");
         } else {
-            buffer.add(" " + symbol + " ");
+            currentCalculationsBuilder.add(" " + symbol + " ");
         }
-        setLine();
     }
 
-    public void add(String symbol) {
-        buffer.add(symbol);
-        setLine();
+    public void addPortion(String symbol) {
+        currentCalculationsBuilder.add(symbol);
     }
 
-    public void deleteSymbol() {
-        buffer.remove(buffer.size() - 1);
-        setLine();
+    public void addAnswer(String answer) {
+        currentCalculationsBuilder.add("\n");
+        currentCalculationsBuilder.add(" = ");
+        currentCalculationsBuilder.add(answer);
+        currentCalculationsBuilder.add("\n");
+        calculationsHistoryBuilder.append(getCurrentCalculations());
     }
 
-    public void deleteNumber() {
-        String element;
-        if (buffer.size() < 2) {
-            element = buffer.get(0);
-            if (element.length() < 2) {
-                clearLines();
-            } else {
-                buffer.set(0, element.substring(0, element.length() - 1));
-            }
-        } else {
-            element = buffer.get(buffer.size() - 1);
-            if (element.length() < 2) {
-                buffer.remove(buffer.size() - 1);
-            } else {
-                buffer.set(buffer.size() - 1, element.substring(0, element.length() - 1));
-            }
+    public void remove() {
+        currentCalculationsBuilder.remove(currentCalculationsBuilder.size() - 1);
+    }
+
+    private String getCurrentCalculations() {
+        StringBuilder sb = new StringBuilder();
+        for (String element : currentCalculationsBuilder) {
+            sb.append(element);
         }
-        setLine();
+        return sb.toString();
     }
 
-    private void setLine() {
-        StringBuilder text = new StringBuilder();
-        for (String element : buffer) {
-            text.append(element);
-        }
-        screenLine = text.toString();
+    public void setCalculationHistory() {
+        calculationsHistory.setValue(calculationsHistoryBuilder + getCurrentCalculations());
     }
 
-    public String getLine() {
-        String answerLineRegex = "= -?[0-9]+\\.?([0-9]+)?";
-        return setLineBreaks(screenLine, answerLineRegex);
+    public LiveData<String> getCalculationHistory() {
+        return calculationsHistory;
     }
 
-    private String setLineBreaks(String text, String regex) {
-        StringBuffer buffer = new StringBuffer();
-        Pattern pattern = Pattern.compile(regex);
-        Matcher matcher = pattern.matcher(text);
-        while (matcher.find()) {
-            matcher.appendReplacement(buffer, "\n" + matcher.group());
-        }
-        matcher.appendTail(buffer);
-        return buffer.toString();
+    public void clearCurrentCalculations() {
+        currentCalculationsBuilder.clear();
     }
 
-    public void setAnswerLine(String text) {
-        answerLine = text;
+    public void clearAllCalculations() {
+        calculationsHistoryBuilder = new StringBuilder();
+        currentCalculationsBuilder.clear();
+        setCurrentPosition("");
+        calculationsHistory.setValue("");
     }
 
-    public String getAnswerLine() {
-        return answerLine
+    public void setCurrentPosition(String text) {
+        currentPosition.setValue(text
                 .replaceAll("\\*", multiplySymbol)
                 .replaceAll("/", divideSymbol)
                 .replaceAll("\\(", "")
                 .replaceAll("\\)", "")
-                .replaceAll("=", "");
+                .replaceAll("=", ""));
     }
 
-    public void clearLines() {
-        buffer.clear();
-        setAnswerLine("");
-        setLine();
+    public LiveData<String> getCurrentPosition() {
+        return currentPosition;
     }
 
-    public String calculateAnswer() {
-        String answer = "";
-        try {
-            if (screenLine.contains("=")) {
-                screenLine = screenLine.substring(screenLine.lastIndexOf("=") + 2);
-            }
-            answer = calculator.calculate(screenLine);
-            setLine();
-            setAnswerLine(answer);
-        } catch (ArithmeticException e) {
-            setAnswerLine("Error");
-        }
-        return answer;
+    @NonNull
+    @Override
+    public String toString() {
+        return "calculationHistory" + calculationsHistory + "\n" +
+                "currentPosition" + currentPosition + "\n" +
+                "calculationHistoryBuilder: " + calculationsHistoryBuilder + "\n" +
+                "currentCalculationsBuilder: " + currentCalculationsBuilder;
     }
 }

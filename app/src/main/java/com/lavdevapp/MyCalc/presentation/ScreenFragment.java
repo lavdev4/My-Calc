@@ -1,4 +1,4 @@
-package com.lavdevapp.MyCalc.fragments;
+package com.lavdevapp.MyCalc.presentation;
 
 import android.graphics.Color;
 import android.os.Bundle;

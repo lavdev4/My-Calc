@@ -1,128 +1,228 @@
 package com.lavdevapp.MyCalc.models;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+
 import java.util.Stack;
 
 public class InputController {
-    private static int leftBraceCount = 0;
-    private static int rightBraceCount = 0;
-    private static String block = "";
-    private static final Stack<String> blockStack = new Stack<>();
-    private final ScreenLineBuilder lineCollector;
+    private String block = "";
+    private final Stack<String> blockStack;
+    private CalculatorRPN.Answer answer = null;
+    private int leftBraceCount = 0;
+    private int rightBraceCount = 0;
+    private final ScreenLineBuilder lineBuilder;
+    private final transient CalculatorRPN calculator;
 
-    public InputController(ScreenLineBuilder lineCollector) {
-        this.lineCollector = lineCollector;
+    private final transient String anyNumber = "-?[0-9]+\\.?([0-9]+)?";
+    private final transient String multiplyOrDivide = "[*/]";
+    private final transient String allSigns = "[+\\-*/]";
+
+    public InputController() {
+        this.lineBuilder = new ScreenLineBuilder();
+        this.blockStack = new Stack<>();
+        this.calculator = new CalculatorRPN();
     }
 
-    public void init(String symbol) {
-        if (InputValueValidator.validate(symbol)) {
-            add(symbol);
+    public LiveData<String> getCalculationsHistory() {
+        return lineBuilder.getCalculationHistory();
+    }
+
+    public LiveData<String> getCurrentPosition() {
+        return lineBuilder.getCurrentPosition();
+    }
+
+    public boolean init(String symbol) {
+        boolean validated = validate(symbol);
+        if (validated) {
+            checkForContinuingInput(symbol);
+            checkForSignReplacement(symbol);
+            addSymbol(symbol);
         }
+        return validated;
     }
 
-    public void delete() {
-        if (blockStack.empty() && block.isEmpty()) {
-            return;
-        } else if (block.isEmpty()) {
-            block = blockStack.pop();
-            if (block.matches("[+\\-*/=]") && block.length() == 1) {
-                lineCollector.deleteSymbol();
-            } else if (block.equals("(")) {
-                leftBraceCount--;
-                lineCollector.deleteNumber();
-            } else if (block.equals(")")) {
-                rightBraceCount--;
-                lineCollector.deleteNumber();
-            } else {
-                lineCollector.deleteNumber();
+    private void checkForContinuingInput(String symbol) {
+        if (answer != null && answer.type == CalculatorRPN.Answer.ANSWER_OK) {
+            if (blockStack.empty() && block.isEmpty() && symbol.matches(allSigns)) {
+                char[] splitAnswer = answer.content.toCharArray();
+                for (char element : splitAnswer) {
+                    addSymbol(String.valueOf(element));
+                }
             }
-        } else {
-            lineCollector.deleteNumber();
+            answer = null;
         }
-        block = block.substring(0, block.length() - 1);
-        setInput();
     }
 
-    public void clear() {
-        blockStack.clear();
-        block = "";
-        leftBraceCount = 0;
-        rightBraceCount = 0;
-        lineCollector.clearLines();
+    private void checkForSignReplacement(String symbol) {
+        if (!blockStack.empty() && block.isEmpty()) {
+            if (symbol.matches("[+*/]") && blockStack.peek().matches(allSigns)) {
+                if (!(symbol.equals("-") && blockStack.peek().equals("-"))) {
+                    remove();
+                }
+            }
+        }
     }
 
-    private void add(String symbol) {
+    private void addSymbol(String symbol) {
         if (symbol.matches("[+*/]")) {
+            addPlusMinusDivide(symbol);
+        } else if (symbol.equals("-")) {
+            addMinus(symbol);
+        } else if (symbol.equals("(")) {
+            addLeftBrace(symbol);
+        } else if (symbol.equals(")")) {
+            addRightBrace(symbol);
+        } else if (symbol.equals("=")) {
+            calculateAnswer();
+        } else {
+            addNumber(symbol);
+        }
+        setCalculations();
+        setCurrentPosition();
+    }
+
+    private void addNumber(String symbol) {
+        block += symbol;
+        lineBuilder.addPortion(symbol);
+    }
+
+    private void addPlusMinusDivide(String symbol) {
+        if (blockStack.empty()) {
+            blockStack.push(block);
+            blockStack.push(symbol);
+            block = "";
+            lineBuilder.addDistinct(symbol);
+        } else if (!blockStack.empty()) {
+            if (!block.isEmpty()) {
+                blockStack.push(block);
+            }
+            blockStack.push(symbol);
+            block = "";
+            lineBuilder.addDistinct(symbol);
+        }
+    }
+
+    private void addMinus(String symbol) {
+        if (isNegativeNumber()) {
+            addNumber(symbol);
+        } else {
             if (blockStack.empty()) {
                 blockStack.push(block);
                 blockStack.push(symbol);
                 block = "";
-                lineCollector.addSymbol(symbol);
+                lineBuilder.addDistinct(symbol);
             } else if (!blockStack.empty()) {
                 if (!block.isEmpty()) {
                     blockStack.push(block);
                 }
                 blockStack.push(symbol);
                 block = "";
-                lineCollector.addSymbol(symbol);
+                lineBuilder.addDistinct(symbol);
             }
-        } else if (symbol.equals("-")) {
-            if (isNegativeNumber()) {
-                block += symbol;
-                lineCollector.add(symbol);
-            } else {
-                if (blockStack.empty()) {
-                    blockStack.push(block);
-                    blockStack.push(symbol);
-                    block = "";
-                    lineCollector.addSymbol(symbol);
-                } else if (!blockStack.empty()) {
-                    if (!block.isEmpty()) {
-                        blockStack.push(block);
-                    }
-                    blockStack.push(symbol);
-                    block = "";
-                    lineCollector.addSymbol(symbol);
-                }
-            }
-        } else if (symbol.equals("(")) {
-            if (block.equals("-")) {
-                block = "";
-                blockStack.push("-");
-            }
-            blockStack.push(symbol);
-            lineCollector.add(symbol);
-        } else if (symbol.equals(")")) {
-            if (!block.isEmpty()) {
-                blockStack.push(block);
-            }
-            blockStack.push(symbol);
-            block = "";
-            lineCollector.add(symbol);
-        } else if (symbol.equals("=")) {
-            String answer = lineCollector.calculateAnswer();
-            if (!block.isEmpty()) {
-                blockStack.push(block);
-            }
-            blockStack.push(symbol);
-            blockStack.push(answer);
-            block = "";
-            lineCollector.addSymbol(symbol);
-            lineCollector.add(answer);
-        } else {
-            block += symbol;
-            lineCollector.add(symbol);
         }
-        setInput();
     }
 
-    private void setInput() {
-        if (!block.isEmpty()) {
-            lineCollector.setAnswerLine(block);
-        } else if (!blockStack.empty()) {
-            lineCollector.setAnswerLine(blockStack.peek());
-        } else {
-            lineCollector.setAnswerLine("");
+    private void addLeftBrace(String symbol) {
+        if (block.equals("-")) {
+            block = "";
+            blockStack.push("-");
         }
+        blockStack.push(symbol);
+        lineBuilder.addPortion(symbol);
+        leftBraceCount++;
+    }
+
+    private void addRightBrace(String symbol) {
+        if (!block.isEmpty()) {
+            blockStack.push(block);
+        }
+        blockStack.push(symbol);
+        block = "";
+        lineBuilder.addPortion(symbol);
+        rightBraceCount++;
+    }
+
+    private void calculateAnswer() {
+        if (!block.isEmpty()){
+            blockStack.push(block);
+        }
+        answer = calculator.tryCalculate(prepareExpression());
+        if (answer.type == CalculatorRPN.Answer.ANSWER_OK) {
+            lineBuilder.addAnswer(answer.content);
+            clearCurrentCalculations();
+        }
+    }
+
+    public boolean remove() {
+        if (blockStack.empty() && block.isEmpty()) {
+            return false;
+        } else {
+            if (!blockStack.empty() && block.isEmpty()) {
+                removeInBlock();
+            } else {
+                removePartly();
+            }
+            lineBuilder.remove();
+        }
+        setCalculations();
+        setCurrentPosition();
+        return true;
+    }
+
+    private void removeInBlock() {
+        String toBeRemoved = blockStack.peek();
+        if (toBeRemoved.equals("(")) {
+            leftBraceCount--;
+        } else if (toBeRemoved.equals(")")) {
+            rightBraceCount--;
+        }
+        blockStack.pop();
+        String staysBeforeRemovable = blockStack.peek();
+        if (staysBeforeRemovable.matches(anyNumber)) {
+            block = staysBeforeRemovable;
+            blockStack.pop();
+        }
+    }
+
+    private void removePartly() {
+        block = block.substring(0, block.length() - 1);
+    }
+
+    private void setCalculations() {
+        lineBuilder.setCalculationHistory();
+    }
+
+    private void setCurrentPosition() {
+        if (answer != null) {
+            lineBuilder.setCurrentPosition(answer.content);
+            if (answer.type != CalculatorRPN.Answer.ANSWER_OK) {
+                answer = null;
+            }
+        } else if (!block.isEmpty()) {
+            lineBuilder.setCurrentPosition(block);
+        } else if (!blockStack.empty()) {
+            lineBuilder.setCurrentPosition(blockStack.peek());
+        } else {
+            lineBuilder.setCurrentPosition("");
+        }
+    }
+
+    private void clearCurrentCalculations() {
+        blockStack.clear();
+        block = "";
+        leftBraceCount = 0;
+        rightBraceCount = 0;
+        lineBuilder.clearCurrentCalculations();
+    }
+
+    public void clearAllCalculations() {
+        blockStack.clear();
+        block = "";
+        answer = null;
+        leftBraceCount = 0;
+        rightBraceCount = 0;
+        lineBuilder.clearAllCalculations();
     }
 
     private boolean isNegativeNumber() {
@@ -130,7 +230,7 @@ public class InputController {
             return true;
         } else if (!block.isEmpty() && blockStack.empty()) {
             return false;
-        } else if (blockStack.peek().matches("-?[0-9]+\\.?([0-9]+)?")) {
+        } else if (blockStack.peek().matches(anyNumber)) {
             return false;
         } else if (blockStack.peek().equals(")")) {
             return false;
@@ -139,89 +239,62 @@ public class InputController {
         }
     }
 
-    private static class InputValueValidator {
-        final static String number = "-?[0-9]+\\.?([0-9]+)?";
-        final static String multiplyOrDivide = "[*/]";
-        final static String allSigns = "[+\\-*/]";
+    private String prepareExpression() {
+        return String.join(" ", blockStack);
+    }
 
-        public static boolean validate(String symbol) {
-            if (symbol.matches(allSigns)) {
-                if (!block.isEmpty()) {
-                    if (block.equals("-")) {
-                        return false;
-                    }
-                    if (block.endsWith(".")) {
-                        return false;
-                    }
-                }
-            }
-            if (symbol.matches(multiplyOrDivide) || symbol.equals("+")) {
-                if (block.isEmpty()) {
-                    if (blockStack.empty()) {
-                        return false;
-                    }
-                    if (!blockStack.empty()) {
-                        if (blockStack.peek().matches(allSigns)) {
-                            return false;
-                        }
-                        if (blockStack.peek().equals("(")) {
-                            return false;
-                        }
-                    }
-                }
-            } else if (symbol.equals("-")) {
-                if (!block.isEmpty()) {
-                    if (block.equals("-")) {
-                        return false;
-                    }
-                }
-            } else if (symbol.equals(".")) {
-                if (block.isEmpty()) {
-                    if (blockStack.empty()) {
-                        return false;
-                    }
-                    if (!blockStack.empty()) {
-                        if (blockStack.peek().contains(".")) {
-                            return false;
-                        }
-                        if (blockStack.peek().matches(allSigns)) {
-                            return false;
-                        }
-                        if (blockStack.peek().equals("(")) {
-                            return false;
-                        }
-                        if (blockStack.peek().equals(")")) {
-                            return false;
-                        }
-                    }
-                }
-                if (!block.isEmpty()) {
-                    if (block.equals("-")) {
-                        return false;
-                    }
-                    if (block.contains(".")) {
-                        return false;
-                    }
-                    if (!blockStack.empty()) {
-                        if (blockStack.peek().contains(".")) {
-                            return false;
-                        }
-                    }
-                }
-            } else if (symbol.equals("(")) {
+    @NonNull
+    @Override
+    public String toString() {
+        return "block: " + block + "\n" +
+                "blockStack: " + blockStack + "\n" +
+                "answer: " + (answer == null ? "null" : answer.content) + "\n" +
+                "leftBrace: " + leftBraceCount + "\n" +
+                "rightBrace: " + rightBraceCount + "\n" +
+                "calculatorRPN: " + (calculator == null ? "null" : calculator.toString()) + "\n" +
+                "------LineBuilder: " + "\n" + lineBuilder;
+    }
+
+    private boolean validate(String symbol) {
+        if (symbol.matches(allSigns)) {
+            if (!block.isEmpty()) {
                 if (block.equals("-")) {
                     return false;
                 }
+                if (block.endsWith(".")) {
+                    return false;
+                }
+            }
+        }
+        if (symbol.matches(multiplyOrDivide) || symbol.equals("+")) {
+            if (block.isEmpty()) {
                 if (blockStack.empty()) {
-                    if (block.matches(number)) {
+                    if (answer == null) {
                         return false;
                     }
                 }
                 if (!blockStack.empty()) {
-                    if (blockStack.peek().matches(number)) {
+                    if (blockStack.peek().equals("(")) {
                         return false;
                     }
-                    if (block.matches(number)) {
+                }
+            }
+        } else if (symbol.equals("-")) {
+            if (!block.isEmpty()) {
+                if (block.equals("-")) {
+                    return false;
+                }
+            }
+        } else if (symbol.equals(".")) {
+            if (block.isEmpty()) {
+                if (blockStack.empty()) {
+                    return false;
+                }
+                if (!blockStack.empty()) {
+                    if (blockStack.peek().contains(".")) {
+                        return false;
+                    }
+                    if (blockStack.peek().matches(allSigns)) {
                         return false;
                     }
                     if (blockStack.peek().equals("(")) {
@@ -231,82 +304,118 @@ public class InputController {
                         return false;
                     }
                 }
-            } else if (symbol.equals(")")) {
-                if (rightBraceCount == leftBraceCount) {
-                    return false;
-                }
-                if (!blockStack.empty()) {
-                    if (blockStack.search("(") < 3) {
-                        return false;
-                    }
-                }
-                if (block.isEmpty()) {
-                    if (blockStack.empty()) {
-                        return false;
-                    }
-                    if (!blockStack.empty()) {
-                        if (blockStack.peek().equals("(")) {
-                            return false;
-                        }
-                        if (blockStack.peek().matches(allSigns)) {
-                            return false;
-                        }
-                    }
-                }
-            } else if (symbol.equals("=")) {
-                if (blockStack.size() < 2) {
-                    return false;
-                }
+            }
+            if (!block.isEmpty()) {
                 if (block.equals("-")) {
                     return false;
                 }
-                if (!block.isEmpty()) {
-                    if (blockStack.empty()) {
-                        return false;
-                    }
-                    if (block.endsWith(".")) {
-                        return false;
-                    }
-                }
-                if (block.isEmpty()) {
-                    if (blockStack.empty()) {
-                        return false;
-                    }
-                    if (!blockStack.empty()) {
-                        if (blockStack.peek().equals("(")) {
-                            return false;
-                        }
-                        if (blockStack.peek().equals("=")) {
-                            return false;
-                        }
-                        if (blockStack.peek().matches(allSigns)) {
-                            return false;
-                        }
-                        if (blockStack.search("=") == 2) {
-                            return false;
-                        }
-                    }
+                if (block.contains(".")) {
+                    return false;
                 }
                 if (!blockStack.empty()) {
-                    if (blockStack.contains("(") && !blockStack.contains(")")) {
+                    if (blockStack.peek().contains(".")) {
                         return false;
                     }
                 }
-            } else if (symbol.matches(number)) {
+            }
+        } else if (symbol.equals("(")) {
+            if (block.equals("-")) {
+                return false;
+            }
+            if (blockStack.empty()) {
+                if (block.matches(anyNumber)) {
+                    return false;
+                }
+            }
+            if (!blockStack.empty()) {
+                if (blockStack.peek().matches(anyNumber)) {
+                    return false;
+                }
+                if (block.matches(anyNumber)) {
+                    return false;
+                }
+                if (blockStack.peek().equals("(")) {
+                    return false;
+                }
+                if (blockStack.peek().equals(")")) {
+                    return false;
+                }
+            }
+        } else if (symbol.equals(")")) {
+            if (rightBraceCount == leftBraceCount) {
+                return false;
+            }
+            if (!blockStack.empty()) {
+                if (blockStack.search("(") < 3) {
+                    return false;
+                }
+            }
+            if (block.isEmpty()) {
+                if (blockStack.empty()) {
+                    return false;
+                }
                 if (!blockStack.empty()) {
-                    if (blockStack.peek().equals(")")) {
+                    if (blockStack.peek().equals("(")) {
+                        return false;
+                    }
+                    if (blockStack.peek().matches(allSigns)) {
                         return false;
                     }
                 }
             }
-            if (symbol.equals("(")) {
-                leftBraceCount++;
+        } else if (symbol.equals("=")) {
+            if (blockStack.size() < 2) {
+                return false;
             }
-            if (symbol.equals(")")) {
-                rightBraceCount++;
+            if (block.equals("-")) {
+                return false;
             }
-            return true;
+            if (!block.isEmpty()) {
+                if (blockStack.empty()) {
+                    return false;
+                }
+                if (block.endsWith(".")) {
+                    return false;
+                }
+            }
+            if (block.isEmpty()) {
+                if (blockStack.empty()) {
+                    return false;
+                }
+                if (!blockStack.empty()) {
+                    if (blockStack.peek().equals("(")) {
+                        return false;
+                    }
+                    if (blockStack.peek().equals("=")) {
+                        return false;
+                    }
+                    if (blockStack.peek().matches(allSigns)) {
+                        return false;
+                    }
+                    if (blockStack.search("=") == 2) {
+                        return false;
+                    }
+                }
+            }
+            if (!blockStack.empty()) {
+                if (blockStack.contains("(") && !blockStack.contains(")")) {
+                    return false;
+                }
+            }
+            if (leftBraceCount != rightBraceCount) {
+                return false;
+            }
+        } else if (symbol.matches(anyNumber)) {
+            if (block.equals("0") || block.equals("-0")) {
+                return false;
+            }
+            if (!blockStack.empty()) {
+                if (blockStack.peek().equals(")")) {
+                    return false;
+                }
+            }
         }
+        return true;
     }
 }
 
