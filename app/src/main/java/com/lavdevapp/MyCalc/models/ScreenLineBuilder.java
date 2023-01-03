@@ -1,77 +1,99 @@
 package com.lavdevapp.MyCalc.models;
 
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import java.util.ArrayList;
 
 public class ScreenLineBuilder {
-    private StringBuilder calculationsHistory;
-    private final ArrayList<String> currentCalculations;
-    private String position = "";
-    private final String multiplySymbol = Character.toString((char) 215);
-    private final String divideSymbol = Character.toString((char) 247);
+    private final MutableLiveData<String> calculationsHistory;
+    private final MutableLiveData<String> currentPosition;
+    private StringBuilder calculationsHistoryBuilder;
+    private final ArrayList<String> currentCalculationsBuilder;
+
+    private final transient String multiplySymbol = Character.toString((char) 215);
+    private final transient String divideSymbol = Character.toString((char) 247);
 
     public ScreenLineBuilder() {
-        calculationsHistory = new StringBuilder();
-        currentCalculations = new ArrayList<>();
+        calculationsHistory = new MutableLiveData<>("");
+        currentPosition = new MutableLiveData<>("");
+        calculationsHistoryBuilder = new StringBuilder();
+        currentCalculationsBuilder = new ArrayList<>();
     }
 
     public void addDistinct(String symbol) {
         if (symbol.equals("*")) {
-            currentCalculations.add(" " + multiplySymbol + " ");
+            currentCalculationsBuilder.add(" " + multiplySymbol + " ");
         } else if (symbol.equals("/")) {
-            currentCalculations.add(" " + divideSymbol + " ");
+            currentCalculationsBuilder.add(" " + divideSymbol + " ");
         } else {
-            currentCalculations.add(" " + symbol + " ");
+            currentCalculationsBuilder.add(" " + symbol + " ");
         }
     }
 
     public void addPortion(String symbol) {
-        currentCalculations.add(symbol);
+        currentCalculationsBuilder.add(symbol);
     }
 
     public void addAnswer(String answer) {
-        currentCalculations.add("\n");
-        currentCalculations.add(" = ");
-        currentCalculations.add(answer);
-        currentCalculations.add("\n");
-        calculationsHistory.append(getCurrentCalculations());
+        currentCalculationsBuilder.add("\n");
+        currentCalculationsBuilder.add(" = ");
+        currentCalculationsBuilder.add(answer);
+        currentCalculationsBuilder.add("\n");
+        calculationsHistoryBuilder.append(getCurrentCalculations());
     }
 
     public void remove() {
-        currentCalculations.remove(currentCalculations.size() - 1);
+        currentCalculationsBuilder.remove(currentCalculationsBuilder.size() - 1);
     }
 
     private String getCurrentCalculations() {
         StringBuilder sb = new StringBuilder();
-        for (String element : currentCalculations) {
+        for (String element : currentCalculationsBuilder) {
             sb.append(element);
         }
         return sb.toString();
     }
 
-    public String getAllCalculations() {
-        return calculationsHistory + getCurrentCalculations();
+    public void setCalculationHistory() {
+        calculationsHistory.setValue(calculationsHistoryBuilder + getCurrentCalculations());
+    }
+
+    public LiveData<String> getCalculationHistory() {
+        return calculationsHistory;
     }
 
     public void clearCurrentCalculations() {
-        currentCalculations.clear();
+        currentCalculationsBuilder.clear();
     }
 
     public void clearAllCalculations() {
-        calculationsHistory = new StringBuilder();
-        currentCalculations.clear();
+        calculationsHistoryBuilder = new StringBuilder();
+        currentCalculationsBuilder.clear();
         setCurrentPosition("");
+        calculationsHistory.setValue("");
     }
 
     public void setCurrentPosition(String text) {
-        position = text;
-    }
-
-    public String getCurrentPosition() {
-        return position
+        currentPosition.setValue(text
                 .replaceAll("\\*", multiplySymbol)
                 .replaceAll("/", divideSymbol)
                 .replaceAll("\\(", "")
                 .replaceAll("\\)", "")
-                .replaceAll("=", "");
+                .replaceAll("=", ""));
+    }
+
+    public LiveData<String> getCurrentPosition() {
+        return currentPosition;
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "calculationHistory" + calculationsHistory + "\n" +
+                "currentPosition" + currentPosition + "\n" +
+                "calculationHistoryBuilder: " + calculationsHistoryBuilder + "\n" +
+                "currentCalculationsBuilder: " + currentCalculationsBuilder;
     }
 }

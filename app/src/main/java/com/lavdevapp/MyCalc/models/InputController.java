@@ -1,6 +1,7 @@
 package com.lavdevapp.MyCalc.models;
 
-import com.lavdevapp.MyCalc.R;
+import androidx.annotation.NonNull;
+import androidx.lifecycle.LiveData;
 
 import java.util.Stack;
 
@@ -11,24 +12,34 @@ public class InputController {
     private int leftBraceCount = 0;
     private int rightBraceCount = 0;
     private final ScreenLineBuilder lineBuilder;
-    private final CalculatorRPN calculator;
+    private final transient CalculatorRPN calculator;
 
-    private final String anyNumber = "-?[0-9]+\\.?([0-9]+)?";
-    private final String multiplyOrDivide = "[*/]";
-    private final String allSigns = "[+\\-*/]";
+    private final transient String anyNumber = "-?[0-9]+\\.?([0-9]+)?";
+    private final transient String multiplyOrDivide = "[*/]";
+    private final transient String allSigns = "[+\\-*/]";
 
-    public InputController(ScreenLineBuilder lineBuilder) {
-        this.lineBuilder = lineBuilder;
+    public InputController() {
+        this.lineBuilder = new ScreenLineBuilder();
         this.blockStack = new Stack<>();
         this.calculator = new CalculatorRPN();
     }
 
-    public void init(String symbol) {
-        if (validate(symbol)) {
+    public LiveData<String> getCalculationsHistory() {
+        return lineBuilder.getCalculationHistory();
+    }
+
+    public LiveData<String> getCurrentPosition() {
+        return lineBuilder.getCurrentPosition();
+    }
+
+    public boolean init(String symbol) {
+        boolean validated = validate(symbol);
+        if (validated) {
             checkForContinuingInput(symbol);
             checkForSignReplacement(symbol);
             addSymbol(symbol);
         }
+        return validated;
     }
 
     private void checkForContinuingInput(String symbol) {
@@ -67,6 +78,7 @@ public class InputController {
         } else {
             addNumber(symbol);
         }
+        setCalculations();
         setCurrentPosition();
     }
 
@@ -142,9 +154,9 @@ public class InputController {
         }
     }
 
-    public void remove() {
+    public boolean remove() {
         if (blockStack.empty() && block.isEmpty()) {
-            return;
+            return false;
         } else {
             if (!blockStack.empty() && block.isEmpty()) {
                 removeInBlock();
@@ -153,7 +165,9 @@ public class InputController {
             }
             lineBuilder.remove();
         }
+        setCalculations();
         setCurrentPosition();
+        return true;
     }
 
     private void removeInBlock() {
@@ -173,6 +187,10 @@ public class InputController {
 
     private void removePartly() {
         block = block.substring(0, block.length() - 1);
+    }
+
+    private void setCalculations() {
+        lineBuilder.setCalculationHistory();
     }
 
     private void setCurrentPosition() {
@@ -223,6 +241,18 @@ public class InputController {
 
     private String prepareExpression() {
         return String.join(" ", blockStack);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return "block: " + block + "\n" +
+                "blockStack: " + blockStack + "\n" +
+                "answer: " + (answer == null ? "null" : answer.content) + "\n" +
+                "leftBrace: " + leftBraceCount + "\n" +
+                "rightBrace: " + rightBraceCount + "\n" +
+                "calculatorRPN: " + (calculator == null ? "null" : calculator.toString()) + "\n" +
+                "------LineBuilder: " + "\n" + lineBuilder;
     }
 
     private boolean validate(String symbol) {

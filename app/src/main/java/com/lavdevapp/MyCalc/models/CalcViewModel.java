@@ -1,79 +1,178 @@
 package com.lavdevapp.MyCalc.models;
 
+import android.app.Application;
+import android.content.SharedPreferences;
+import android.util.Log;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.InstanceCreator;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import com.lavdevapp.MyCalc.R;
 
-public class CalcViewModel extends ViewModel {
-    private MutableLiveData<String> screenText;
-    private MutableLiveData<String> answerScreenText;
-    private final InputController inputController;
-    private final ScreenLineBuilder lineBuilder;
+import java.lang.reflect.MalformedParameterizedTypeException;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
-    public CalcViewModel() {
-        this.lineBuilder = new ScreenLineBuilder();
-        this.inputController = new InputController(lineBuilder);
+public class CalcViewModel extends AndroidViewModel {
+    private LiveData<String> screenText;
+    private LiveData<String> positionScreenText;
+    private InputController inputController;
+    private final SharedPreferences sharedPreferences;
+    private boolean saveRequired = false;
+
+    private final String SHARED_PREFS_NAME = "AppPreferences";
+    private final String SHARED_PREFS_INPUT_CONTROLLER_KEY = "input_controller";
+
+    public CalcViewModel(Application context) {
+        super(context);
+        sharedPreferences = context
+                .getSharedPreferences(SHARED_PREFS_NAME, AppCompatActivity.MODE_PRIVATE);
+        if (sharedPreferences.contains(SHARED_PREFS_INPUT_CONTROLLER_KEY)) {
+            loadData();
+        } else {
+            loadDefault();
+        }
     }
 
     public LiveData<String> getScreenText() {
-        if (screenText == null) {
-            screenText = new MutableLiveData<>("");
-        }
         return screenText;
     }
 
-    public LiveData<String> getAnswerScreenText() {
-        if (answerScreenText == null) {
-            answerScreenText = new MutableLiveData<>("");
-        }
-        return answerScreenText;
+    public LiveData<String> getPositionScreenText() {
+        return positionScreenText;
     }
 
     public void onButtonPressed(int buttonId) {
         if (buttonId == R.id.oneButton) {
-            inputController.init("1");
+            saveRequired = inputController.init("1");
         } else if (buttonId == R.id.twoButton) {
-            inputController.init("2");
+            saveRequired = inputController.init("2");
         } else if (buttonId == R.id.threeButton) {
-            inputController.init("3");
+            saveRequired = inputController.init("3");
         } else if (buttonId == R.id.fourButton) {
-            inputController.init("4");
+            saveRequired = inputController.init("4");
         } else if (buttonId == R.id.fiveButton) {
-            inputController.init("5");
+            saveRequired = inputController.init("5");
         } else if (buttonId == R.id.sixButton) {
-            inputController.init("6");
+            saveRequired = inputController.init("6");
         } else if (buttonId == R.id.sevenButton) {
-            inputController.init("7");
+            saveRequired = inputController.init("7");
         } else if (buttonId == R.id.eightButton) {
-            inputController.init("8");
+            saveRequired = inputController.init("8");
         } else if (buttonId == R.id.nineButton) {
-            inputController.init("9");
+            saveRequired = inputController.init("9");
         } else if (buttonId == R.id.zeroButton) {
-            inputController.init("0");
+            saveRequired = inputController.init("0");
         } else if (buttonId == R.id.plusButton) {
-            inputController.init("+");
+            saveRequired = inputController.init("+");
         } else if (buttonId == R.id.minusButton) {
-            inputController.init("-");
+            saveRequired = inputController.init("-");
         } else if (buttonId == R.id.multiplyButton) {
-            inputController.init("*");
+            saveRequired = inputController.init("*");
         } else if (buttonId == R.id.divideButton) {
-            inputController.init("/");
+            saveRequired = inputController.init("/");
         } else if (buttonId == R.id.leftBraceButton) {
-            inputController.init("(");
+            saveRequired = inputController.init("(");
         } else if (buttonId == R.id.rightBraceButton) {
-            inputController.init(")");
+            saveRequired = inputController.init(")");
         } else if (buttonId == R.id.deleteButton) {
-            inputController.remove();
+            saveRequired = inputController.remove();
         } else if (buttonId == R.id.commaButton) {
-            inputController.init(".");
+            saveRequired = inputController.init(".");
         } else if (buttonId == R.id.equalsButton) {
-            inputController.init("=");
+            saveRequired = inputController.init("=");
         } else if (buttonId == R.id.clearButton) {
             inputController.clearAllCalculations();
+            saveRequired = true;
         }
-        screenText.setValue(lineBuilder.getAllCalculations());
-        answerScreenText.setValue(lineBuilder.getCurrentPosition());
+    }
+
+    public void saveData() {
+        if (saveRequired) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeHierarchyAdapter(LiveData.class, createLiveDataSerializer())
+                    .create();
+            String serializedInputController = gson.toJson(inputController);
+            Log.d("Json: ", serializedInputController);
+            sharedPreferences.edit()
+                    .putString(SHARED_PREFS_INPUT_CONTROLLER_KEY, serializedInputController)
+                    .apply();
+            saveRequired = false;
+        }
+    }
+
+    private void loadData() {
+        String serializedInputController = sharedPreferences.getString(SHARED_PREFS_INPUT_CONTROLLER_KEY, null);
+        if (serializedInputController != null) {
+            Gson gson = new GsonBuilder()
+                    .registerTypeHierarchyAdapter(LiveData.class, createLiveDataDeserializer())
+                    .registerTypeAdapter(CalculatorRPN.class, createCalculatorRpnInstanceCreator())
+                    .create();
+            inputController = gson.fromJson(serializedInputController, InputController.class);
+            Log.d("Json: ", inputController.toString());
+            screenText = inputController.getCalculationsHistory();
+            positionScreenText = inputController.getCurrentPosition();
+        } else {
+            loadDefault();
+        }
+    }
+
+    private void loadDefault() {
+        inputController = new InputController();
+        screenText = inputController.getCalculationsHistory();
+        positionScreenText = inputController.getCurrentPosition();
+    }
+
+    private JsonSerializer<LiveData<String>> createLiveDataSerializer() {
+        return (src, typeOfSrc, context) -> new JsonPrimitive(src.getValue());
+    }
+
+    private JsonDeserializer<LiveData<String>> createLiveDataDeserializer() {
+        return (json, typeOfT, context) -> {
+            try {
+                Type[] typeParameters = ((ParameterizedType) typeOfT).getActualTypeArguments();
+                if (typeParameters.length != 1) {
+                    throw new JsonParseException(
+                            "Wrong number of generic type parameters. Must be single type - String."
+                    );
+                }
+                Type genericClass = typeParameters[0];
+                if (genericClass != String.class) {
+                    throw new JsonParseException(
+                            "Incompatible type of generic class: " + genericClass + ". " + "Required class: String."
+                    );
+                } else {
+                    return new MutableLiveData<>(json.getAsJsonPrimitive().getAsString());
+                }
+            } catch (ClassCastException nonGenericClassException) {
+                throw new JsonParseException("Deserializable class is not a generic class.");
+            } catch (TypeNotPresentException | MalformedParameterizedTypeException parametrizedTypeException) {
+                throw new JsonParseException("Generic class malformed or unknown.");
+            }
+        };
+    }
+
+    private InstanceCreator<CalculatorRPN> createCalculatorRpnInstanceCreator() {
+        return type -> {
+            if (type != CalculatorRPN.class) {
+                throw new JsonParseException(
+                        "Instance creator is used on a wrong class - " +
+                        type +
+                        ". " +
+                        "Expected: CalculatorRPN.class"
+                );
+            } else {
+                return new CalculatorRPN();
+            }
+        };
     }
 }

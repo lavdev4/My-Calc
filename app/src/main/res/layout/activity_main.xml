@@ -22,7 +22,7 @@
 
     <androidx.fragment.app.FragmentContainerView
         android:id="@+id/AnswerLineFragment"
-        android:name="com.lavdevapp.MyCalc.presentation.AnswerLineFragment"
+        android:name="com.lavdevapp.MyCalc.presentation.PositionLineFragment"
         android:layout_height="0dp"
         android:layout_width="0dp"
         android:layout_marginLeft="9dp"
