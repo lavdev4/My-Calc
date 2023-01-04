@@ -84,7 +84,7 @@ public class CalcViewModel extends AndroidViewModel {
             saveRequired = inputController.init("(");
         } else if (buttonId == R.id.rightBraceButton) {
             saveRequired = inputController.init(")");
-        } else if (buttonId == R.id.deleteButton) {
+        } else if (buttonId == R.id.removeButton) {
             saveRequired = inputController.remove();
         } else if (buttonId == R.id.commaButton) {
             saveRequired = inputController.init(".");

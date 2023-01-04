@@ -99,7 +99,7 @@
         app:layout_constraintRight_toLeftOf="@id/ButtonsLayout4">
 
         <Button
-            android:id="@+id/deleteButton"
+            android:id="@+id/removeButton"
             android:layout_weight="1"
             style="@style/DeleteButtonStyle"/>
 
