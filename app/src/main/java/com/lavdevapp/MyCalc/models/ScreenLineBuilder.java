@@ -12,8 +12,8 @@ public class ScreenLineBuilder {
     private StringBuilder calculationsHistoryBuilder;
     private final ArrayList<String> currentCalculationsBuilder;
 
-    private final transient String multiplySymbol = Character.toString((char) 215);
-    private final transient String divideSymbol = Character.toString((char) 247);
+    private static final transient String MULTIPLY_SYMBOL = Character.toString((char) 215);
+    private static final transient String DIVIDE_SYMBOL = Character.toString((char) 247);
 
     public ScreenLineBuilder() {
         calculationsHistory = new MutableLiveData<>("");
@@ -24,9 +24,9 @@ public class ScreenLineBuilder {
 
     public void addDistinct(String symbol) {
         if (symbol.equals("*")) {
-            currentCalculationsBuilder.add(" " + multiplySymbol + " ");
+            currentCalculationsBuilder.add(" " + MULTIPLY_SYMBOL + " ");
         } else if (symbol.equals("/")) {
-            currentCalculationsBuilder.add(" " + divideSymbol + " ");
+            currentCalculationsBuilder.add(" " + DIVIDE_SYMBOL + " ");
         } else {
             currentCalculationsBuilder.add(" " + symbol + " ");
         }
@@ -77,8 +77,8 @@ public class ScreenLineBuilder {
 
     public void setCurrentPosition(String text) {
         currentPosition.setValue(text
-                .replaceAll("\\*", multiplySymbol)
-                .replaceAll("/", divideSymbol)
+                .replaceAll("\\*", MULTIPLY_SYMBOL)
+                .replaceAll("/", DIVIDE_SYMBOL)
                 .replaceAll("\\(", "")
                 .replaceAll("\\)", "")
                 .replaceAll("=", ""));

@@ -8,17 +8,21 @@ import java.util.Stack;
 
 public class CalculatorRPN {
     private final HashMap<String, Integer> priorityComputation = new HashMap<>();
-    private final String signsRegex = "[+\\-*/]";
-    private final String integerNumberRegex = "-?[0-9]+";
-    private final String anyNumberRegex = "-?[0-9]+\\.?([0-9]+)?";
     private final DecimalFormat calculationFormat;
     public final DecimalFormat answerFormat;
 
+    private static final String ANY_NUMBER_REGEX = "-?[0-9]+\\.?([0-9]+)?";
+    private static final String INTEGER_NUMBER_REGEX = "-?[0-9]+";
+    private static final String ALL_SIGNS_REGEX = "[+\\-*/]";
+    private static final String DECIMAL_FORMAT_CALCULATIONS_PATTERN = "#.##########";
+    private static final String DECIMAL_FORMAT_ANSWER_PATTERN = "#.######";
+    private static final char DECIMAL_FORMAT_SEPARATOR = '.';
+
     public CalculatorRPN() {
         DecimalFormatSymbols dfs = new DecimalFormatSymbols();
-        dfs.setDecimalSeparator('.');
-        calculationFormat = new DecimalFormat("#.##########", dfs);
-        answerFormat = new DecimalFormat("#.######", dfs);
+        dfs.setDecimalSeparator(DECIMAL_FORMAT_SEPARATOR);
+        calculationFormat = new DecimalFormat(DECIMAL_FORMAT_CALCULATIONS_PATTERN, dfs);
+        answerFormat = new DecimalFormat(DECIMAL_FORMAT_ANSWER_PATTERN, dfs);
 
         priorityComputation.put("+", 1);
         priorityComputation.put("-", 1);
@@ -32,9 +36,9 @@ public class CalculatorRPN {
 
         String[] expressionElements = expression.split(" ");
         for (String symbol : expressionElements) {
-            if (symbol.matches(anyNumberRegex)) {
+            if (symbol.matches(ANY_NUMBER_REGEX)) {
                 mainStack.push(symbol);
-            } else if (symbol.matches(signsRegex)) {
+            } else if (symbol.matches(ALL_SIGNS_REGEX)) {
                 try {
                     while (priorityComputation.get(buffer.peek()) >= priorityComputation.get(symbol)) {
                         mainStack.push(buffer.pop());
@@ -72,9 +76,9 @@ public class CalculatorRPN {
             String stackSymbol = mainStack.pop();
             if (stackSymbol.contains(".")) {
                 buffer.push(Double.parseDouble(stackSymbol));
-            } else if (!stackSymbol.contains(".") && stackSymbol.matches(integerNumberRegex)) {
+            } else if (!stackSymbol.contains(".") && stackSymbol.matches(INTEGER_NUMBER_REGEX)) {
                 buffer.push(Double.parseDouble(stackSymbol + ".0"));
-            } else if (stackSymbol.matches(signsRegex)) {
+            } else if (stackSymbol.matches(ALL_SIGNS_REGEX)) {
                 Double b = Double.parseDouble(calculationFormat.format(buffer.pop()));
                 Double a = Double.parseDouble(calculationFormat.format(buffer.pop()));
                 switch (stackSymbol) {

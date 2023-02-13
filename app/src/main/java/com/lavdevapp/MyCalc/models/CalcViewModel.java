@@ -16,6 +16,7 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
 import com.lavdevapp.MyCalc.R;
 
 import java.lang.reflect.MalformedParameterizedTypeException;
@@ -85,7 +86,8 @@ public class CalcViewModel extends AndroidViewModel {
         } else if (buttonId == R.id.rightBraceButton) {
             saveRequired = inputController.init(")");
         } else if (buttonId == R.id.removeButton) {
-            saveRequired = inputController.remove();
+            inputController.remove();
+            saveRequired = true;
         } else if (buttonId == R.id.commaButton) {
             saveRequired = inputController.init(".");
         } else if (buttonId == R.id.equalsButton) {
@@ -100,6 +102,7 @@ public class CalcViewModel extends AndroidViewModel {
         if (saveRequired) {
             Gson gson = new GsonBuilder()
                     .registerTypeHierarchyAdapter(LiveData.class, createLiveDataSerializer())
+                    .setPrettyPrinting()
                     .create();
             String serializedInputController = gson.toJson(inputController);
             Log.d("Json: ", serializedInputController);
@@ -115,7 +118,6 @@ public class CalcViewModel extends AndroidViewModel {
         if (serializedInputController != null) {
             Gson gson = new GsonBuilder()
                     .registerTypeHierarchyAdapter(LiveData.class, createLiveDataDeserializer())
-                    .registerTypeAdapter(CalculatorRPN.class, createCalculatorRpnInstanceCreator())
                     .create();
             inputController = gson.fromJson(serializedInputController, InputController.class);
             Log.d("Json: ", inputController.toString());
@@ -157,21 +159,6 @@ public class CalcViewModel extends AndroidViewModel {
                 throw new JsonParseException("Deserializable class is not a generic class.");
             } catch (TypeNotPresentException | MalformedParameterizedTypeException parametrizedTypeException) {
                 throw new JsonParseException("Generic class malformed or unknown.");
-            }
-        };
-    }
-
-    private InstanceCreator<CalculatorRPN> createCalculatorRpnInstanceCreator() {
-        return type -> {
-            if (type != CalculatorRPN.class) {
-                throw new JsonParseException(
-                        "Instance creator is used on a wrong class - " +
-                        type +
-                        ". " +
-                        "Expected: CalculatorRPN.class"
-                );
-            } else {
-                return new CalculatorRPN();
             }
         };
     }
