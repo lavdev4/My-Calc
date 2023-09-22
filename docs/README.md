@@ -6,10 +6,10 @@
 <details>
   <summary><b>🏞️Скриншоты</b></summary>
     <p align="center">
-      <img width="20%" height="20%" src="https://github.com/lavdev4/MyCalc/assets/103329075/6bfd5e53-de26-46ae-b26c-912405ad1922">
+      <img width="20%" height="20%" src="https://github.com/lavdev4/MyCalc/assets/103329075/b4c2efb0-6c66-47e0-9aa9-5f687f9eb189">
     </p>
     <p align="center">
-      <img width="40%" height="40%" src="https://github.com/lavdev4/MyCalc/assets/103329075/17b5aa72-dcfa-417f-8d68-fc43a860f03c">
+      <img width="40%" height="40%" src="https://github.com/lavdev4/MyCalc/assets/103329075/ee8413e0-d529-41b8-9c2e-6ec973b5ee4d">
     </p>
 </details>
 
